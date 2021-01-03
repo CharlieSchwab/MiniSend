@@ -66,7 +66,6 @@
                     , {headers: {'Content-Type': "multipart/form-data; charset=utf-8; boundary=" + Math.random().toString().substr(2)}
                     })
                     .then(response => {
-                        console.log(response);
                         this.$router.push({name: 'home'});
                     }).catch(err => {
                         if (err.response.status === 422) {
@@ -76,6 +75,9 @@
                                 this.errors.push(e)
                             })
                             })
+                        }else if(err.response.status === 500){
+                            this.errors = [];
+                            this.errors.push("Please reconfigure mail host");
                         }
                     })
             },

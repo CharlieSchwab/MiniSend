@@ -47,7 +47,7 @@ class MailController extends Controller
             'content'=> "hello charlie",
         );
         $fromEmail = "efef@ui.com";
-        $fromName = "efefui.com";
+        $fromName = "efefui@yu.com";
 
         echo(json_encode($data));
 
@@ -76,30 +76,8 @@ class MailController extends Controller
          }
     }
 
-    // A function to send a Mail
 
-    public function send_mail(Request $request){
-
-        $fromEmail = $request->sender;
-
-        $data = array(
-            'sender' => $request->sender,
-            'recipient' => $request->recipient,
-            'subject'=> $request->subject,
-            'content'=> $request->content,
-            'attach_utl'=> $request->attach_url
-        );
-
-
-        Mail::send('mail', $data, function($message) use ($fromEmail)
-        {   
-            $message->from($fromEmail);
-            $message->to('otid91@gmail.com', 'dotis')->subject('Nouvelle soumission en ligne');
-        });
-    }
-
-
-    // A function to create a new Mail
+    // A function to create a new Mail and send it
 
     public function create(Request $request){
        
@@ -110,9 +88,13 @@ class MailController extends Controller
             'content' => ['required', 'string']
         ]);
 
+        $data['status'] = "posted";
+
+        $file = null;
+
         if($request->file('attach_file')){
             $file = $request->file('attach_file');
-            $name = '/' . uniqid() . '.' . $file->extension();
+            $name = uniqid() . '.' . $file->extension();
             $file->storePubliclyAs('public', $name);
             $data['attach_url'] = $name;
         }
@@ -121,8 +103,20 @@ class MailController extends Controller
 
         $mail->save();
 
-        //$this->send_mail($mail);
+        // echo(json_encode($data));
 
+        if($file == null){
+            Mail::send('mail', $data, function($message) {
+                $message->to($data['recipient'])->subject($data['subject']);
+                $message->from($data['sender']);
+            });
+        }else{
+            Mail::send('mail', $data, function($message) {
+                $message->to($data['recipient'])->subject($data['subject']);
+                $message->from($data['sender'])->attach($file);
+            });
+        } 
+        
         return response()->json($mail);
     }
 
@@ -141,10 +135,11 @@ class MailController extends Controller
     public function read_one($id){
 
         $mail = MailModel::where('id','=',$id)->first();
+        $mail['file_url'] = storage_path('app/public/').$mail['attach_url'];
         return response()->json($mail);
     }
 
-    // A function to update a mail
+    // A function to update a mail and resend it
 
     public function update($id, Request $request){
 
@@ -157,7 +152,7 @@ class MailController extends Controller
 
         if($request->file('attach_file')){
             $file = $request->file('attach_file');
-            $name = '/' . uniqid() . '.' . $file->extension();
+            $name = uniqid() . '.' . $file->extension();
             $file->storePubliclyAs('public', $name);
             $data['attach_url'] = $name;
         }
@@ -165,10 +160,20 @@ class MailController extends Controller
         $mail = MailModel::find($id);
         $mail -> update($data);
 
-        //$this->send_mail($mail);
+        if($file == null){
+            Mail::send(['text'=>'mail'], $data, function($message) {
+                $message->to($data['recipient'])->subject($data['subject']);
+                $message->from($data['sender']);
+            });
+        }else{
+            Mail::send(['text'=>'mail'], $data, function($message) {
+                $message->to($data['recipient'])->subject($data['subject']);
+                $message->from($data['sender'])->attach($file);
+            });
+        }
 
         return response()->json($mail);
-        
+
     }
 
     // A function to delete a mail

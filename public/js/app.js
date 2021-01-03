@@ -2017,6 +2017,10 @@ __webpack_require__.r(__webpack_exports__);
               _this.errors.push(e);
             });
           });
+        } else if (err.response.status === 500) {
+          _this.errors = [];
+
+          _this.errors.push("Please reconfigure mail host");
         }
       });
     },
@@ -2188,7 +2192,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2264,10 +2267,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      email: {}
+      email: {},
+      fileUrl: "#"
     };
   },
   created: function created() {
@@ -2275,7 +2281,11 @@ __webpack_require__.r(__webpack_exports__);
 
     this.axios.get("http://localhost:8000/api/read_one/".concat(this.$route.params.id)).then(function (response) {
       _this.email = response.data;
+      _this.fileUrl = _this.email.file_url;
     });
+  },
+  func: function func() {
+    alert("hello");
   }
 });
 
@@ -20548,7 +20558,21 @@ var render = function() {
       _vm._v(" "),
       _vm._m(3),
       _vm._v(" "),
-      _c("p", { domProps: { innerHTML: _vm._s(_vm.email.content) } })
+      _c("p", { domProps: { innerHTML: _vm._s(_vm.email.content) } }),
+      _vm._v(" "),
+      _c("hr"),
+      _vm._v(" "),
+      this.email.attach_url
+        ? _c("div", [
+            _c("b", [_vm._v("Attached File:")]),
+            _vm._v(" "),
+            _c("a", { attrs: { href: _vm.fileUrl, download: "" } }, [
+              _vm._v("Download")
+            ]),
+            _vm._v(" "),
+            _c("p", [_vm._v(_vm._s(_vm.fileUrl))])
+          ])
+        : _vm._e()
     ])
   ])
 }

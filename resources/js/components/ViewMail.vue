@@ -37,7 +37,6 @@
         </table>
     </div>
 
-    
 </template>
 
 <script>

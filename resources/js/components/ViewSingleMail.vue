@@ -14,10 +14,12 @@
             <span><b>Content:</b></span>
             <p v-html="email.content">
             </p>
-            <!-- <div class="form-group">
-                <label>Attach Files</label>
-                <input type="" class="form-control" v-model="email.attach_url">
-            </div> -->
+            <hr>
+            <div v-if="this.email.attach_url">
+                <b>Attached File:</b>
+                <a v-bind:href="fileUrl" download>Download</a>
+                <p>{{fileUrl}}</p>
+            </div>
         </div>
     </div>
 </template>
@@ -26,7 +28,8 @@
     export default {
         data() {
             return {
-                email: {}
+                email: {},
+                fileUrl: "#"
             }
         },
         created() {
@@ -34,7 +37,11 @@
                 .get(`http://localhost:8000/api/read_one/${this.$route.params.id}`)
                 .then((response) => {
                     this.email = response.data;
+                    this.fileUrl = this.email.file_url;
                 });
+        },
+        func(){
+            alert("hello");
         }
     }
 </script>
