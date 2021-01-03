@@ -1970,22 +1970,59 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      email: {}
+      email: {},
+      fileObj: {},
+      fileN: "",
+      errors: null
     };
   },
   methods: {
     createEmail: function createEmail() {
       var _this = this;
 
-      this.axios.post('http://localhost:8000/api/create', this.email).then(function (response) {
-        return _this.$router.push({
+      this.errors = [];
+      var formData = new FormData();
+      formData.append('attach_file', this.fileObj);
+
+      _.each(this.email, function (value, key) {
+        formData.append(key, value);
+      });
+
+      this.axios.post('http://localhost:8000/api/create', formData, {
+        headers: {
+          'Content-Type': "multipart/form-data; charset=utf-8; boundary=" + Math.random().toString().substr(2)
+        }
+      }).then(function (response) {
+        console.log(response);
+
+        _this.$router.push({
           name: 'home'
         });
-      }); // .catch(error => console.log(error))
-      // .finally(() => this.loading = false)
+      })["catch"](function (err) {
+        if (err.response.status === 422) {
+          _this.errors = [];
+
+          _.each(err.response.data.errors, function (error) {
+            _.each(error, function (e) {
+              _this.errors.push(e);
+            });
+          });
+        }
+      });
+    },
+    handleFileObject: function handleFileObject() {
+      this.fileObj = this.$refs.file.files[0];
+      this.fileN = this.fileObj.name;
     }
   }
 });
@@ -2035,10 +2072,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      email: {}
+      email: {},
+      fileObj: {},
+      fileN: "",
+      errors: null
     };
   },
   created: function created() {
@@ -2046,17 +2092,46 @@ __webpack_require__.r(__webpack_exports__);
 
     this.axios.get("http://localhost:8000/api/read_one/".concat(this.$route.params.id)).then(function (response) {
       _this.email = response.data;
+      _this.fileN = response.data.attach_url;
     });
   },
   methods: {
     updateEmail: function updateEmail() {
       var _this2 = this;
 
-      this.axios.put("http://localhost:8000/api/update/".concat(this.$route.params.id), this.email).then(function (response) {
+      this.errors = [];
+      var formData = new FormData();
+      formData.append('attach_file', this.fileObj);
+
+      _.each(this.email, function (value, key) {
+        formData.append(key, value);
+      });
+
+      this.axios.post("http://localhost:8000/api/update/".concat(this.$route.params.id), formData, {
+        headers: {
+          'Content-Type': "multipart/form-data; charset=utf-8; boundary=" + Math.random().toString().substr(2)
+        }
+      }).then(function (response) {
+        console.log(response);
+
         _this2.$router.push({
           name: 'home'
         });
+      })["catch"](function (err) {
+        if (err.response.status === 422) {
+          _this2.errors = [];
+
+          _.each(err.response.data.errors, function (error) {
+            _.each(error, function (e) {
+              _this2.errors.push(e);
+            });
+          });
+        }
       });
+    },
+    handleFileObject: function handleFileObject() {
+      this.fileObj = this.$refs.file.files[0];
+      this.fileN = this.fileObj.name;
     }
   }
 });
@@ -2072,6 +2147,8 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
 //
 //
 //
@@ -2149,6 +2226,56 @@ __webpack_require__.r(__webpack_exports__);
         return mail.sender.toLowerCase().includes(search_str) || mail.recipient.toLowerCase().includes(search_str) || mail.subject.toLowerCase().includes(search_str);
       });
     }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ViewSingleMail.vue?vue&type=script&lang=js&":
+/*!*************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/ViewSingleMail.vue?vue&type=script&lang=js& ***!
+  \*************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      email: {}
+    };
+  },
+  created: function created() {
+    var _this = this;
+
+    this.axios.get("http://localhost:8000/api/read_one/".concat(this.$route.params.id)).then(function (response) {
+      _this.email = response.data;
+    });
   }
 });
 
@@ -19886,13 +20013,27 @@ var render = function() {
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-md-6" }, [
+        _vm.errors
+          ? _c(
+              "div",
+              _vm._l(_vm.errors, function(error) {
+                return _c(
+                  "div",
+                  { key: error, staticClass: "alert alert-danger" },
+                  [_vm._v(_vm._s(error))]
+                )
+              }),
+              0
+            )
+          : _vm._e(),
+        _vm._v(" "),
         _c(
           "form",
           {
             on: {
               submit: function($event) {
                 $event.preventDefault()
-                return _vm.createMail($event)
+                return _vm.createEmail($event)
               }
             }
           },
@@ -19910,7 +20051,7 @@ var render = function() {
                   }
                 ],
                 staticClass: "form-control",
-                attrs: { type: "text" },
+                attrs: { type: "text", required: "" },
                 domProps: { value: _vm.email.sender },
                 on: {
                   input: function($event) {
@@ -19936,7 +20077,7 @@ var render = function() {
                   }
                 ],
                 staticClass: "form-control",
-                attrs: { type: "text" },
+                attrs: { type: "text", required: "" },
                 domProps: { value: _vm.email.recipient },
                 on: {
                   input: function($event) {
@@ -19962,7 +20103,7 @@ var render = function() {
                   }
                 ],
                 staticClass: "form-control",
-                attrs: { type: "text" },
+                attrs: { type: "text", required: "" },
                 domProps: { value: _vm.email.subject },
                 on: {
                   input: function($event) {
@@ -19987,7 +20128,7 @@ var render = function() {
                     expression: "email.content"
                   }
                 ],
-                attrs: { rows: "10", cols: "90" },
+                attrs: { rows: "10", cols: "100", required: "" },
                 domProps: { value: _vm.email.content },
                 on: {
                   input: function($event) {
@@ -19998,6 +20139,30 @@ var render = function() {
                   }
                 }
               })
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "custom-file" }, [
+              _c("label", [_vm._v("Attach Files")]),
+              _vm._v(" "),
+              _c("input", {
+                ref: "file",
+                staticClass: "custom-file-input",
+                attrs: { type: "file", id: "customFile" },
+                on: {
+                  change: function($event) {
+                    return _vm.handleFileObject()
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c(
+                "label",
+                {
+                  staticClass: "custom-file-label text-left",
+                  attrs: { for: "customFile" }
+                },
+                [_vm._v(_vm._s(_vm.fileN))]
+              )
             ]),
             _vm._v(" "),
             _c(
@@ -20038,6 +20203,20 @@ var render = function() {
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-md-6" }, [
+        _vm.errors
+          ? _c(
+              "div",
+              _vm._l(_vm.errors, function(error) {
+                return _c(
+                  "div",
+                  { key: error, staticClass: "alert alert-danger" },
+                  [_vm._v(_vm._s(error))]
+                )
+              }),
+              0
+            )
+          : _vm._e(),
+        _vm._v(" "),
         _c(
           "form",
           {
@@ -20152,6 +20331,30 @@ var render = function() {
               })
             ]),
             _vm._v(" "),
+            _c("div", { staticClass: "custom-file" }, [
+              _c("label", [_vm._v("Attach Files")]),
+              _vm._v(" "),
+              _c("input", {
+                ref: "file",
+                staticClass: "custom-file-input",
+                attrs: { type: "file", id: "customFile" },
+                on: {
+                  change: function($event) {
+                    return _vm.handleFileObject()
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c(
+                "label",
+                {
+                  staticClass: "custom-file-label text-left",
+                  attrs: { for: "customFile" }
+                },
+                [_vm._v(_vm._s(_vm.fileN))]
+              )
+            ]),
+            _vm._v(" "),
             _c(
               "button",
               { staticClass: "btn btn-primary", attrs: { type: "submit" } },
@@ -20186,7 +20389,7 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h3", { staticClass: "text-center" }, [_vm._v("View Emails")]),
+    _c("h3", { staticClass: "text-center" }, [_vm._v("Sent Emails")]),
     _c("br"),
     _vm._v(" "),
     _c("div", { staticClass: "form-group" }, [
@@ -20240,6 +20443,15 @@ var render = function() {
                   _c(
                     "router-link",
                     {
+                      staticClass: "btn btn-success",
+                      attrs: { to: { name: "view", params: { id: email.id } } }
+                    },
+                    [_vm._v("View\n                    ")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "router-link",
+                    {
                       staticClass: "btn btn-primary",
                       attrs: { to: { name: "edit", params: { id: email.id } } }
                     },
@@ -20289,6 +20501,81 @@ var staticRenderFns = [
         _c("th", [_vm._v("Actions")])
       ])
     ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ViewSingleMail.vue?vue&type=template&id=714ddfcf&":
+/*!*****************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/ViewSingleMail.vue?vue&type=template&id=714ddfcf& ***!
+  \*****************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("h3", { staticClass: "text-center" }, [_vm._v("View Email")]),
+    _vm._v(" "),
+    _c("div", { staticClass: "container" }, [
+      _vm._m(0),
+      _vm._v(" "),
+      _c("span", [_vm._v(_vm._s(_vm.email.sender))]),
+      _vm._v(" "),
+      _c("hr"),
+      _vm._v(" "),
+      _vm._m(1),
+      _vm._v(" "),
+      _c("span", [_vm._v(_vm._s(_vm.email.recipient))]),
+      _vm._v(" "),
+      _c("hr"),
+      _vm._v(" "),
+      _vm._m(2),
+      _vm._v(" "),
+      _c("span", [_vm._v(_vm._s(_vm.email.subject))]),
+      _vm._v(" "),
+      _c("hr"),
+      _vm._v(" "),
+      _vm._m(3),
+      _vm._v(" "),
+      _c("p", { domProps: { innerHTML: _vm._s(_vm.email.content) } })
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", [_c("b", [_vm._v("From:")])])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", [_c("b", [_vm._v("To:")])])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", [_c("b", [_vm._v("Subject:")])])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", [_c("b", [_vm._v("Content:")])])
   }
 ]
 render._withStripped = true
@@ -35634,9 +35921,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _routes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./routes */ "./resources/js/routes.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_5__);
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
+
 
 
 
@@ -35897,6 +36187,75 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/ViewSingleMail.vue":
+/*!****************************************************!*\
+  !*** ./resources/js/components/ViewSingleMail.vue ***!
+  \****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _ViewSingleMail_vue_vue_type_template_id_714ddfcf___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ViewSingleMail.vue?vue&type=template&id=714ddfcf& */ "./resources/js/components/ViewSingleMail.vue?vue&type=template&id=714ddfcf&");
+/* harmony import */ var _ViewSingleMail_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ViewSingleMail.vue?vue&type=script&lang=js& */ "./resources/js/components/ViewSingleMail.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _ViewSingleMail_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _ViewSingleMail_vue_vue_type_template_id_714ddfcf___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _ViewSingleMail_vue_vue_type_template_id_714ddfcf___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/ViewSingleMail.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/ViewSingleMail.vue?vue&type=script&lang=js&":
+/*!*****************************************************************************!*\
+  !*** ./resources/js/components/ViewSingleMail.vue?vue&type=script&lang=js& ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ViewSingleMail_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./ViewSingleMail.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ViewSingleMail.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ViewSingleMail_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/ViewSingleMail.vue?vue&type=template&id=714ddfcf&":
+/*!***********************************************************************************!*\
+  !*** ./resources/js/components/ViewSingleMail.vue?vue&type=template&id=714ddfcf& ***!
+  \***********************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ViewSingleMail_vue_vue_type_template_id_714ddfcf___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./ViewSingleMail.vue?vue&type=template&id=714ddfcf& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ViewSingleMail.vue?vue&type=template&id=714ddfcf&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ViewSingleMail_vue_vue_type_template_id_714ddfcf___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ViewSingleMail_vue_vue_type_template_id_714ddfcf___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/routes.js":
 /*!********************************!*\
   !*** ./resources/js/routes.js ***!
@@ -35910,22 +36269,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_CreateMail_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/CreateMail.vue */ "./resources/js/components/CreateMail.vue");
 /* harmony import */ var _components_ViewMail_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/ViewMail.vue */ "./resources/js/components/ViewMail.vue");
 /* harmony import */ var _components_EditMail_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/EditMail.vue */ "./resources/js/components/EditMail.vue");
+/* harmony import */ var _components_ViewSingleMail_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/ViewSingleMail.vue */ "./resources/js/components/ViewSingleMail.vue");
+
 
 
  // This is the Vue route file
 
-var routes = [{
+var routes = [// The main route
+{
   name: 'home',
   path: '/',
   component: _components_ViewMail_vue__WEBPACK_IMPORTED_MODULE_1__["default"]
-}, {
+}, // The route for mail creation and sending
+{
   name: 'create',
   path: '/create',
   component: _components_CreateMail_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
-}, {
+}, // Route for editing a sent message and resending
+{
   name: 'edit',
   path: '/edit/:id',
   component: _components_EditMail_vue__WEBPACK_IMPORTED_MODULE_2__["default"]
+}, // Route for viewing a single email with HTML support
+{
+  name: 'view',
+  path: '/view/:id',
+  component: _components_ViewSingleMail_vue__WEBPACK_IMPORTED_MODULE_3__["default"]
 }];
 
 /***/ }),

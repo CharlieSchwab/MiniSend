@@ -3,6 +3,10 @@
         <h3 class="text-center">Edit Email</h3>
         <div class="row">
             <div class="col-md-6">
+                <div v-if="errors">
+                    <div v-for="error in errors" :key="error" class="alert alert-danger">{{ error }}</div>
+                </div>
+
                 <form @submit.prevent="updateEmail">
                     <div class="form-group">
                         <label>From:</label>
@@ -21,10 +25,12 @@
                         <textarea rows="10" cols="90" v-model="email.content">
                         </textarea>
                     </div>
-                    <!-- <div class="form-group">
-                        <label>Attach Files</label>
-                        <input type="" class="form-control" v-model="email.attach_url">
-                    </div> -->
+                    <div class="custom-file">
+                    <label>Attach Files</label>
+                    <input type="file" class="custom-file-input" id="customFile" ref="file" @change="handleFileObject()">
+                    <label class="custom-file-label text-left" for="customFile">{{ fileN }}</label>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Resend Email</button>
                 </form>
             </div>
@@ -36,7 +42,10 @@
     export default {
         data() {
             return {
-                email: {}
+                email: {},
+                fileObj: {},
+                fileN: "",
+                errors: null
             }
         },
         created() {
@@ -44,15 +53,42 @@
                 .get(`http://localhost:8000/api/read_one/${this.$route.params.id}`)
                 .then((response) => {
                     this.email = response.data;
+                    this.fileN = response.data.attach_url;
                 });
         },
         methods: {
             updateEmail() {
+
+                this.errors = [];
+
+                let formData = new FormData();
+                formData.append('attach_file', this.fileObj);
+
+                _.each(this.email, (value, key) => {
+                    formData.append(key, value)
+                });
+
                 this.axios
-                    .put(`http://localhost:8000/api/update/${this.$route.params.id}`, this.email)
-                    .then((response) => {
+                    .post(`http://localhost:8000/api/update/${this.$route.params.id}`, formData
+                    , {headers: {'Content-Type': "multipart/form-data; charset=utf-8; boundary=" + Math.random().toString().substr(2)}
+                    })
+                    .then(response => {
+                        console.log(response);
                         this.$router.push({name: 'home'});
-                    });
+                    }).catch(err => {
+                        if (err.response.status === 422) {
+                            this.errors = []
+                            _.each(err.response.data.errors, error => {
+                            _.each(error, e => {
+                                this.errors.push(e)
+                            })
+                            })
+                        }
+                    })
+            },
+            handleFileObject(){
+                 this.fileObj = this.$refs.file.files[0];
+                 this.fileN = this.fileObj.name;
             }
         }
     }

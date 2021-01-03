@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h3 class="text-center">View Emails</h3><br/>
+        <h3 class="text-center">Sent Emails</h3><br/>
         <div class="form-group">
             <label for="search">Search:</label>
             <input type="text" class="form-control" v-model="search" placeholder="Search.." id="search">
@@ -25,6 +25,8 @@
                 <td>{{ email.status }}</td>
                 <td>
                     <div class="btn-group" role="group">
+                        <router-link :to="{name: 'view', params: { id: email.id }}" class="btn btn-success">View
+                        </router-link>
                         <router-link :to="{name: 'edit', params: { id: email.id }}" class="btn btn-primary">Edit
                         </router-link>
                         <button class="btn btn-danger" @click="deleteEmail(email.id)">Delete</button>

@@ -15,6 +15,27 @@ use App\Models\MailModel;
 class MailController extends Controller
 {
 
+    public function register(Request $request)
+    {
+        $data = $request->validate([
+            'avatar'   => ['image'],
+            'name'     => ['required', 'string'],
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'confirmed'],
+        ]);
+
+        //echo json_encode($data);
+
+        $file = $request->file('avatar');
+        $path = '/avatars/';
+        $filename = uniqid().".".$file->extension();
+        $file->storePubliclyAs( $path, $filename,'public');
+        $data['avatar'] = storage_path('app/public').$path.$filename;
+
+        return $data;
+    }
+
+
     // This is a test function intended to test sending emails with a static data
 
     public function sendtest(){
@@ -81,18 +102,28 @@ class MailController extends Controller
     // A function to create a new Mail
 
     public function create(Request $request){
+       
+        $data = $request->validate([
+            'sender'     => ['required', 'email'],
+            'recipient'    => ['required', 'email'],
+            'subject' => ['required', 'string'],
+            'content' => ['required', 'string']
+        ]);
 
-        $mail = new MailModel(['sender'   => $request->input('sender'),
-                        'recipient'  => $request->input('recipient'),
-                        'subject'    => $request->input('subject'),
-                        'content'    => $request->input('content')
-                        ]);
+        if($request->file('attach_file')){
+            $file = $request->file('attach_file');
+            $name = '/' . uniqid() . '.' . $file->extension();
+            $file->storePubliclyAs('public', $name);
+            $data['attach_url'] = $name;
+        }
+
+        $mail = new MailModel($data);
 
         $mail->save();
 
         //$this->send_mail($mail);
 
-        return response()->json('Mail successfully created');
+        return response()->json($mail);
     }
 
 
@@ -117,12 +148,27 @@ class MailController extends Controller
 
     public function update($id, Request $request){
 
+        $data = $request->validate([
+            'sender'     => ['required', 'email'],
+            'recipient'    => ['required', 'email'],
+            'subject' => ['required', 'string'],
+            'content' => ['required', 'string']
+        ]);
+
+        if($request->file('attach_file')){
+            $file = $request->file('attach_file');
+            $name = '/' . uniqid() . '.' . $file->extension();
+            $file->storePubliclyAs('public', $name);
+            $data['attach_url'] = $name;
+        }
+
         $mail = MailModel::find($id);
-        $mail -> update($request -> all());
+        $mail -> update($data);
 
         //$this->send_mail($mail);
+
+        return response()->json($mail);
         
-        return response()->json('Mail successfully updated');
     }
 
     // A function to delete a mail
