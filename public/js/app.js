@@ -2003,8 +2003,6 @@ __webpack_require__.r(__webpack_exports__);
           'Content-Type': "multipart/form-data; charset=utf-8; boundary=" + Math.random().toString().substr(2)
         }
       }).then(function (response) {
-        console.log(response);
-
         _this.$router.push({
           name: 'home'
         });
@@ -2130,6 +2128,10 @@ __webpack_require__.r(__webpack_exports__);
               _this2.errors.push(e);
             });
           });
+        } else if (err.response.status === 500) {
+          _this2.errors = [];
+
+          _this2.errors.push("Please reconfigure mail host");
         }
       });
     },

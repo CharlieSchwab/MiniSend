@@ -83,6 +83,9 @@
                                 this.errors.push(e)
                             })
                             })
+                        }else if(err.response.status === 500){
+                            this.errors = [];
+                            this.errors.push("Please reconfigure mail host");
                         }
                     })
             },

@@ -106,12 +106,12 @@ class MailController extends Controller
         // echo(json_encode($data));
 
         if($file == null){
-            Mail::send('mail', $data, function($message) {
+            Mail::send('mail', $data, function($message) use ($data){
                 $message->to($data['recipient'])->subject($data['subject']);
                 $message->from($data['sender']);
             });
         }else{
-            Mail::send('mail', $data, function($message) {
+            Mail::send('mail', $data, function($message) use ($data){
                 $message->to($data['recipient'])->subject($data['subject']);
                 $message->from($data['sender'])->attach($file);
             });
@@ -150,6 +150,8 @@ class MailController extends Controller
             'content' => ['required', 'string']
         ]);
 
+        $file = null;
+
         if($request->file('attach_file')){
             $file = $request->file('attach_file');
             $name = uniqid() . '.' . $file->extension();
@@ -161,12 +163,12 @@ class MailController extends Controller
         $mail -> update($data);
 
         if($file == null){
-            Mail::send(['text'=>'mail'], $data, function($message) {
+            Mail::send(['text'=>'mail'], $data, function($message) use ($data){
                 $message->to($data['recipient'])->subject($data['subject']);
                 $message->from($data['sender']);
             });
         }else{
-            Mail::send(['text'=>'mail'], $data, function($message) {
+            Mail::send(['text'=>'mail'], $data, function($message) use ($data){
                 $message->to($data['recipient'])->subject($data['subject']);
                 $message->from($data['sender'])->attach($file);
             });
