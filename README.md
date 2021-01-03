@@ -24,7 +24,7 @@
 
 This is a simple mail sending program built on Laravel and Vue.js.
 Features include laravel APIs to build email and store them on a local database and send them over the internet, 
-a Vue constructed Frontend consisting of that shows 4 pages and search ability, file attachment, HTML view and more.
+a Vue constructed Frontend consisting of 4 pages and search ability, file attachment, HTML view and more.
 
 Laravel provides a simple API for the popular SwiftMailer library with drivers for SMTP, Mailgun, Postmark, Amazon SES, and sendmail.
 Currently the mail host has been set to Gmail.
