@@ -8,9 +8,11 @@
 
 4. ' Execute dump file "mailtable.sql"
 
-5. npm run dev
+5. ' configure maildrive in .env file
 
-6. php artisan serve
+6. npm run dev
+
+7. php artisan serve
 
 
 
